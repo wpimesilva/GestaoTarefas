@@ -30,6 +30,11 @@ public class AppDbContext : DbContext
 
             entity.Property(x => x.DataCriacao)
                 .IsRequired();
+
+            entity.Property(x => x.Excluida)
+                .IsRequired();
+
+            entity.HasQueryFilter(x => !x.Excluida);
         });
     }
 }

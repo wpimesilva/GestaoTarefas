@@ -184,9 +184,11 @@ public class TarefaServiceTests
     }
 
     [Fact]
-    public async Task ExcluirAsync_DeveExcluirTarefa_QuandoElaExistir()
+    public async Task ExcluirAsync_DeveExcluirTarefaLogicamente_QuandoElaExistir()
     {
-        var service = CriarService();
+        var context = CriarContext();
+        var repository = new TarefaRepository(context);
+        var service = new TarefaService(repository, NullLogger<TarefaService>.Instance);
 
         var criada = await service.CriarAsync(new TarefaCriacaoRequest
         {
@@ -196,10 +198,51 @@ public class TarefaServiceTests
 
         await service.ExcluirAsync(criada.Id);
 
+        var tarefaExcluida = await context.Tarefas
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.Id == criada.Id);
+
+        tarefaExcluida.Should().NotBeNull();
+        tarefaExcluida!.Excluida.Should().BeTrue();
+        tarefaExcluida.DataExclusao.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ExcluirAsync_DeveRemoverTarefaDaListagem_QuandoExcluidaLogicamente()
+    {
+        var service = CriarService();
+
+        var criada = await service.CriarAsync(new TarefaCriacaoRequest
+        {
+            Titulo = "Tarefa para listagem",
+            Status = StatusTarefa.Pendente
+        });
+
+        await service.ExcluirAsync(criada.Id);
+
+        var resultado = await service.ListarAsync(new TarefaFiltroRequest());
+
+        resultado.Should().NotContain(x => x.Id == criada.Id);
+    }
+
+    [Fact]
+    public async Task ObterPorIdAsync_DeveRetornarNaoEncontrado_QuandoTarefaEstiverExcluidaLogicamente()
+    {
+        var service = CriarService();
+
+        var criada = await service.CriarAsync(new TarefaCriacaoRequest
+        {
+            Titulo = "Tarefa excluída",
+            Status = StatusTarefa.Pendente
+        });
+
+        await service.ExcluirAsync(criada.Id);
+
         var action = async () => await service.ObterPorIdAsync(criada.Id);
 
         await action.Should()
-            .ThrowAsync<EntidadeNaoEncontradaException>();
+            .ThrowAsync<EntidadeNaoEncontradaException>()
+            .WithMessage(MensagensResposta.TarefaNaoEncontrada);
     }
 
     [Fact]
@@ -216,13 +259,18 @@ public class TarefaServiceTests
 
     private static TarefaService CriarService()
     {
+        var context = CriarContext();
+        var repository = new TarefaRepository(context);
+
+        return new TarefaService(repository, NullLogger<TarefaService>.Instance);
+    }
+
+    private static AppDbContext CriarContext()
+    {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        var context = new AppDbContext(options);
-        var repository = new TarefaRepository(context);
-
-        return new TarefaService(repository, NullLogger<TarefaService>.Instance);
+        return new AppDbContext(options);
     }
 }

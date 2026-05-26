@@ -91,4 +91,30 @@ public class TarefasControllerTests : IClassFixture<ApiFactory>
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
+
+    [Fact]
+    public async Task Delete_DeveRemoverTarefaDaConsulta_QuandoExcluidaLogicamente()
+    {
+        var criarResponse = await _client.PostAsJsonAsync("/api/v1/tarefas", new TarefaCriacaoRequest
+        {
+            Titulo = "Tarefa para exclusão lógica",
+            Status = StatusTarefa.Pendente
+        });
+
+        var tarefaCriada = await criarResponse.Content.ReadFromJsonAsync<ApiResposta<TarefaResposta>>();
+
+        await _client.DeleteAsync($"/api/v1/tarefas/{tarefaCriada!.Dados!.Id}");
+
+        var buscarResponse = await _client.GetAsync($"/api/v1/tarefas/{tarefaCriada.Dados.Id}");
+
+        buscarResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Delete_DeveRetornarNotFound_QuandoTarefaNaoExistir()
+    {
+        var response = await _client.DeleteAsync($"/api/v1/tarefas/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using GestaoTarefas.Api.Dtos;
-using GestaoTarefas.Api.Enums;
 using GestaoTarefas.Api.Exceptions;
 using GestaoTarefas.Api.Models;
 using GestaoTarefas.Api.Repositories;
@@ -34,7 +33,8 @@ public class TarefaService : ITarefaService
                 : request.Descricao.Trim(),
             DataVencimento = request.DataVencimento,
             Status = request.Status,
-            DataCriacao = DateTime.UtcNow
+            DataCriacao = DateTime.UtcNow,
+            Excluida = false
         };
 
         await _tarefaRepository.CriarAsync(tarefa);
@@ -87,7 +87,7 @@ public class TarefaService : ITarefaService
 
         await _tarefaRepository.ExcluirAsync(tarefa);
 
-        _logger.LogInformation("Tarefa {TarefaId} excluída com sucesso.", tarefa.Id);
+        _logger.LogInformation("Tarefa {TarefaId} excluída logicamente com sucesso.", tarefa.Id);
     }
 
     private async Task<Tarefa> BuscarTarefaAsync(Guid id)

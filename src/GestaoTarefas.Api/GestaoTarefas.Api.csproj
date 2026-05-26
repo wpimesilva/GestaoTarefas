@@ -9,8 +9,4 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.7" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="NovaPasta\" />
-  </ItemGroup>
 </Project>

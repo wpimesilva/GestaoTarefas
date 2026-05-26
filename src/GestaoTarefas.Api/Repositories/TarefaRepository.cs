@@ -52,7 +52,11 @@ public class TarefaRepository : ITarefaRepository
 
     public async Task ExcluirAsync(Tarefa tarefa)
     {
-        _context.Tarefas.Remove(tarefa);
+        tarefa.Excluida = true;
+        tarefa.DataExclusao = DateTime.UtcNow;
+        tarefa.DataAtualizacao = DateTime.UtcNow;
+
+        _context.Tarefas.Update(tarefa);
         await _context.SaveChangesAsync();
     }
 }
