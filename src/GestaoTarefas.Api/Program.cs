@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using GestaoTarefas.Api.Data;
+using GestaoTarefas.Api.Middlewares;
 using GestaoTarefas.Api.Repositories;
 using GestaoTarefas.Api.Services;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
