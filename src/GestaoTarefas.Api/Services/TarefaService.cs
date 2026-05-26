@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using GestaoTarefas.Api.Dtos;
 using GestaoTarefas.Api.Enums;
+using GestaoTarefas.Api.Exceptions;
 using GestaoTarefas.Api.Models;
 using GestaoTarefas.Api.Repositories;
 using GestaoTarefas.Api.Shared;
@@ -93,7 +94,8 @@ public class TarefaService : ITarefaService
     {
         var tarefa = await _tarefaRepository.ObterPorIdAsync(id);
 
-        
+        if (tarefa is null)
+            throw new EntidadeNaoEncontradaException(MensagensResposta.TarefaNaoEncontrada);
 
         return tarefa;
     }
@@ -109,7 +111,8 @@ public class TarefaService : ITarefaService
             validationResults,
             validateAllProperties: true);
 
-        
+        if (!valido)
+            throw new ValidacaoException(validationResults.Select(x => x.ErrorMessage!));
     }
 
     private static TarefaResposta MapearResposta(Tarefa tarefa)
