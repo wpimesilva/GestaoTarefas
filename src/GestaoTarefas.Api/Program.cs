@@ -1,27 +1,24 @@
-using System.Text.Json.Serialization;
 using GestaoTarefas.Api.Data;
+using GestaoTarefas.Api.Repositories;
+using GestaoTarefas.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-    .AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseInMemoryDatabase("GestaoTarefasDb");
 });
 
+builder.Services.AddScoped<ITarefaRepository, TarefaRepository>();
+builder.Services.AddScoped<ITarefaService, TarefaService>();
 
 var app = builder.Build();
 
-
-
 app.UseHttpsRedirection();
+
 app.MapControllers();
 
 app.Run();
